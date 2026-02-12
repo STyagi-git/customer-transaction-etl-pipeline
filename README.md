@@ -3,6 +3,8 @@
 
 A simple, end-to-end batch ETL pipeline that ingests **customer** and **transaction** CSV files, loads them into **Google Cloud Storage**, ingests into **BigQuery (raw layer)**, then builds **curated analytics tables** using SQL for **Power BI reporting**.
 
+Dataset Link - https://www.kaggle.com/datasets/ashraf1997/anz-synthesised-transaction-dataset
+
 ---
 
 ## What this project demonstrates
