@@ -171,11 +171,11 @@ python -m src.run_pipeline
     -`customer_summary`
     -`daily_kpis`
 
-Suggested visuals:
-
-    - Line chart: Revenue by txn_date (from `daily_kpis`)
-    - KPI cards: revenue, txn_count, active_customers
-    - Table: customer spend + txn_count with slicers for `country` and `activity_status`
+Suggested visuals
+  
+  - Line chart: Revenue by txn_date (from `daily_kpis`)
+  - KPI cards: revenue, txn_count, active_customers
+  - Table: customer spend + txn_count with slicers for `country` and `activity_status`
 
 ---
 
