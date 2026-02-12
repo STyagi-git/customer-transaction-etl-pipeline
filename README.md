@@ -23,6 +23,7 @@ flowchart LR
   B --> C[BigQuery Raw<br/>raw.customers_raw<br/>raw.transactions_raw]
   C --> D[BigQuery Curated<br/>curated.customer_summary<br/>curated.daily_kpis]
   D --> E[Power BI Dashboard]
+```
 
 
 ---
