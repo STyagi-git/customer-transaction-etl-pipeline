@@ -1,74 +1,29 @@
-# Customer Transactions ETL Pipeline  
+# Customer Transactions ETL Pipeline
 **Local → GCS → BigQuery (Raw) → BigQuery (Curated) → Power BI**
+
+A simple, end-to-end batch ETL pipeline that ingests **customer** and **transaction** CSV files, loads them into **Google Cloud Storage**, ingests into **BigQuery (raw layer)**, then builds **curated analytics tables** using SQL for **Power BI reporting**.
 
 ---
 
-## Overview
-
-This project implements a cloud-based batch ETL pipeline that ingests customer and transaction data from local CSV files, loads them into Google Cloud Storage (GCS), processes them in BigQuery, and produces curated analytical tables for business reporting in Power BI.
-
-### What This Project Demonstrates
-
-- End-to-end ETL / ELT workflow  
-- Cloud storage integration (Google Cloud Storage)  
-- BigQuery data warehouse ingestion  
-- SQL-based transformations  
-- Data modelling (raw → curated layer separation)  
-- BI reporting integration (Power BI)
+## What this project demonstrates
+- Batch ETL / ELT workflow
+- Cloud storage ingestion (GCS)
+- BigQuery loading (raw tables)
+- SQL transformations (curated tables)
+- Simple analytical modelling (customer + daily KPI views)
+- BI consumption using Power BI
 
 ---
 
 ## Architecture
 
-Local CSV
-↓
-Google Cloud Storage (GCS)
-↓
-BigQuery (raw layer)
-↓
-BigQuery (curated layer via SQL)
-↓
-Power BI Dashboard
+```mermaid
+flowchart LR
+  A[Local CSVs<br/>customers.csv, transactions.csv] --> B[GCS Bucket<br/>/ingest/run_id=...]
+  B --> C[BigQuery Raw<br/>raw.customers_raw<br/>raw.transactions_raw]
+  C --> D[BigQuery Curated<br/>curated.customer_summary<br/>curated.daily_kpis]
+  D --> E[Power BI Dashboard]
 
-
----
-
-
----
-
-## Inputs
-
-### `customers.csv`
-Customer master data containing identity and signup information.
-
-### `transactions.csv`
-Transaction-level event data including timestamps, amount, and merchant details.
-
----
-
-## Outputs (BigQuery – Curated Dataset)
-
-### `curated.customer_summary`
-
-Customer-level aggregated metrics:
-
-- Transaction count  
-- Total spend  
-- Average transaction value  
-- First transaction timestamp  
-- Last transaction timestamp  
-- Activity status flag (`NO_TXNS`, `ACTIVE_30D`, `INACTIVE`)
-
----
-
-### `curated.daily_kpis`
-
-Daily performance metrics:
-
-- Transaction count  
-- Active customers  
-- Revenue  
-- Average order value  
 
 ---
 
@@ -96,97 +51,147 @@ customer-etl/
 ├── requirements.txt
 └── README.md
 ```
+---
 
+## Inputs
+
+`data/customers.csv`
+
+Customer master data (identity + signup info).
+
+data/transactions.csv
+
+Transaction-level events (timestamp, amount, merchant/category fields).
+
+Replace the sample CSVs with your own as long as the column names match the schema expected by src/bq_load_raw.py.
 
 ---
 
-## Setup (One-Time Configuration)
+## Outputs (BigQuery curated dataset)
 
-### Create a GCS Bucket
+`curated.customer_summary`
 
-```
-gs://customer-etl-bucket-raw/
-```
+Customer-level aggregates:
 
+`txn_count`
 
----
+`total_spend`
 
-### Create BigQuery Datasets
+`avg_txn_value`
 
-Create two datasets in your project:
+`first_txn_ts`, `last_txn_ts`
 
-- `raw`
-- `curated`
+`activity_status` (`NO_TXNS`, `ACTIVE_30D`, `INACTIVE`)
 
----
+`curated.daily_kpis`
 
-### Create Service Account & Permissions
+Daily KPIs:
 
-Grant the following roles:
+`txn_count`
 
-- **Storage Object Admin**
-- **BigQuery Job User**
-- **BigQuery Data Editor**
+`active_customers`
 
-Download the service account JSON key.
+`revenue`
+
+`avg_order_value`
 
 ---
 
-### Set Credentials
+## Prerequisites
 
-#### Windows (PowerShell)
+- Python 3.9+ (3.10/3.11 recommended)
 
+- A GCP project with:
+    - GCS bucket (example: `gs://your-customer-etl-bucket/`)
+    - BigQuery datasets:
+        - `raw`
+        - `curated`
+
+- Service account with permissions:
+    - Storage Object Admin (or Object Creator + Viewer)
+    - BigQuery Job User
+    - BigQuery Data Editor (on the datasets)
+---
+
+## Setup
+
+1) Authenticate (Service Account Key)
+
+Windows (PowerShell)
 ```
 setx GOOGLE_APPLICATION_CREDENTIALS "C:\path\sa-key.json"
 ```
 
----
+macOS / Linux
+```
+export GOOGLE_APPLICATION_CREDENTIALS="/path/to/sa-key.json"
+```
 
-## Install Dependencies
-
+2) Install dependencies
 ```
 pip install -r requirements.txt
 ```
 
+3) Set environment variables
+
+Windows (PowerShell)
+```
+$env:GCP_PROJECT_ID="your-gcp-project-id"
+$env:GCS_BUCKET="your-customer-etl-bucket"
+$env:BQ_RAW_DATASET="raw"
+$env:BQ_CURATED_DATASET="curated"
+```
+
+macOS / Linux
+```
+export GCP_PROJECT_ID="your-gcp-project-id"
+export GCS_BUCKET="your-customer-etl-bucket"
+export BQ_RAW_DATASET="raw"
+export BQ_CURATED_DATASET="curated"
+```
 ---
 
-## Environment Variables
+## Run the pipeline
 
-Set the following:
-
-```
-GCP_PROJECT_ID=your-gcp-project
-GCS_BUCKET=your-customer-etl-bucket
-BQ_RAW_DATASET=raw
-BQ_CURATED_DATASET=curated
-```
-
-## Run the Pipeline
-
-From the project root:
-
+From the repo root:
 ```
 python -m src.run_pipeline
 ```
 
-The Pipeline Performs:
+### What happens when you run it:
 
-1. Uploads CSV files to GCS
-2. Loads raw tables into BigQuery
-3. Executes SQL transformation scripts
-4. Creates curated analytics tables
+1. Uploads `data/customers.csv` and `data/transactions.csv` to GCS under a timestamped `run_id=...` folder
+
+2. Loads them into BigQuery raw tables:
+    - `raw.customers_raw`
+    - `raw.transactions_raw`
+
+3. Executes SQL transformations to create/replace curated tables:
+    - `curated.customer_summary`
+    - `curated.daily_kpis`
 
 ---
 
-## Power BI Connection
+## Power BI (reporting)
 
-- Open Power BI Desktop
-- Select 
-    `Get Data → Google BigQuery`
-- Choose dataset: `curated`
-- Load:
-    `customer_summary`
-    `daily_kpis`
+1. Open Power BI Desktop
+2. Get Data → Google BigQuery
+3. Sign in and select dataset: `curated`
+4. Load:
+    -`customer_summary`
+    -`daily_kpis`
 
+Suggested visuals:
+    - Line chart: Revenue by txn_date (from `daily_kpis`)
+    - KPI cards: revenue, txn_count, active_customers
+    - Table: customer spend + txn_count with slicers for `country` and `activity_status`
+
+---
+
+## Troubleshooting
+
+- 403 / Access Denied: service account missing BigQuery or Storage permissions.
+- Not found: Dataset: create BigQuery datasets raw and curated first.
+- python not recognized on Windows: Python isn’t installed or not added to PATH (install from python.org and tick “Add to PATH”).
 
 
