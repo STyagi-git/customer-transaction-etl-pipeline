@@ -56,15 +56,11 @@ customer-etl/
 
 ## Inputs
 
-`data/customers.csv`
+`data/customers.csv` : Customer master data (identity + signup info).
 
-Customer master data (identity + signup info).
+`data/transactions.csv` : Transaction-level events (timestamp, amount, merchant/category fields).
 
-data/transactions.csv
-
-Transaction-level events (timestamp, amount, merchant/category fields).
-
-Replace the sample CSVs with your own as long as the column names match the schema expected by src/bq_load_raw.py.
+Replace the sample CSVs with your own as long as the column names match the schema expected by `src/bq_load_raw.py`.
 
 ---
 
@@ -74,27 +70,20 @@ Replace the sample CSVs with your own as long as the column names match the sche
 
 Customer-level aggregates:
 
-`txn_count`
-
-`total_spend`
-
-`avg_txn_value`
-
-`first_txn_ts`, `last_txn_ts`
-
-`activity_status` (`NO_TXNS`, `ACTIVE_30D`, `INACTIVE`)
+- `txn_count`
+- `total_spend`
+- `avg_txn_value`
+- `first_txn_ts`, `last_txn_ts`
+- `activity_status` (`NO_TXNS`, `ACTIVE_30D`, `INACTIVE`)
 
 `curated.daily_kpis`
 
 Daily KPIs:
 
-`txn_count`
-
-`active_customers`
-
-`revenue`
-
-`avg_order_value`
+- `txn_count`
+- `active_customers`
+- `revenue`
+- `avg_order_value`
 
 ---
 
@@ -118,38 +107,38 @@ Daily KPIs:
 
 1) Authenticate (Service Account Key)
 
-Windows (PowerShell)
-```
-setx GOOGLE_APPLICATION_CREDENTIALS "C:\path\sa-key.json"
-```
+  Windows (PowerShell)
+  ```
+  setx GOOGLE_APPLICATION_CREDENTIALS "C:\path\sa-key.json"
+  ```
 
-macOS / Linux
-```
-export GOOGLE_APPLICATION_CREDENTIALS="/path/to/sa-key.json"
-```
+  macOS / Linux
+  ```
+  export GOOGLE_APPLICATION_CREDENTIALS="/path/to/sa-key.json"
+  ```
 
 2) Install dependencies
-```
-pip install -r requirements.txt
-```
+  ```
+  pip install -r requirements.txt
+  ```
 
 3) Set environment variables
 
-Windows (PowerShell)
-```
-$env:GCP_PROJECT_ID="your-gcp-project-id"
-$env:GCS_BUCKET="your-customer-etl-bucket"
-$env:BQ_RAW_DATASET="raw"
-$env:BQ_CURATED_DATASET="curated"
-```
-
-macOS / Linux
-```
-export GCP_PROJECT_ID="your-gcp-project-id"
-export GCS_BUCKET="your-customer-etl-bucket"
-export BQ_RAW_DATASET="raw"
-export BQ_CURATED_DATASET="curated"
-```
+  Windows (PowerShell)
+  ```
+  $env:GCP_PROJECT_ID="your-gcp-project-id"
+  $env:GCS_BUCKET="your-customer-etl-bucket"
+  $env:BQ_RAW_DATASET="raw"
+  $env:BQ_CURATED_DATASET="curated"
+  ```
+  
+  macOS / Linux
+  ```
+  export GCP_PROJECT_ID="your-gcp-project-id"
+  export GCS_BUCKET="your-customer-etl-bucket"
+  export BQ_RAW_DATASET="raw"
+  export BQ_CURATED_DATASET="curated"
+  ```
 ---
 
 ## Run the pipeline
@@ -173,7 +162,7 @@ python -m src.run_pipeline
 
 ---
 
-## Power BI (reporting)
+## Power BI (Reporting)
 
 1. Open Power BI Desktop
 2. Get Data → Google BigQuery
@@ -183,6 +172,7 @@ python -m src.run_pipeline
     -`daily_kpis`
 
 Suggested visuals:
+
     - Line chart: Revenue by txn_date (from `daily_kpis`)
     - KPI cards: revenue, txn_count, active_customers
     - Table: customer spend + txn_count with slicers for `country` and `activity_status`
